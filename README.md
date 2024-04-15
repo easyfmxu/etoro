@@ -1,0 +1,2 @@
+# etoro
+trading
