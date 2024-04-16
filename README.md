@@ -29,6 +29,14 @@ The search result is stored in data/users.csv and bunch of json files for each u
     data/users.csv
     [username].json
 
+.JSON online converter 
+
+    https://codebeautify.org/string-to-json-online
+
+.read/write JSON to file
+
+    https://stackoverflow.com/questions/36856232/write-add-data-in-json-file-using-node-js
+
 .Requirement
 nodejs needs to be later version
     which node
@@ -36,8 +44,8 @@ nodejs needs to be later version
 MacOS 
 
 .Doc
-https://playwright.dev/docs/input
 
+    https://playwright.dev/docs/input
 
 .proxy
 https://oxylabs.io/products/residential-proxy-pools
@@ -45,5 +53,4 @@ https://oxylabs.io/products/residential-proxy-pools
 .userAgent 
 https://www.zenrows.com/blog/playwright-user-agent#customize-ua
 
-.read/write JSON 
-https://stackoverflow.com/questions/36856232/write-add-data-in-json-file-using-node-js
+
