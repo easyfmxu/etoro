@@ -146,27 +146,29 @@ const scrapeUser = async(tick) =>{
         await page.waitForTimeout(5000);
 
         //for test
+        /*
         if (i>=3) {
             break;
         }
+        */
     }
 
     const res = {
-        portfolios,
-        portfolioDataDetails
+        topLevl: portfolios,
+        tradeDetails: portfolioDataDetails
     }
     const json = JSON.stringify(res);
 
     const name = title.split('\n')[0]
 
     const outFile = `data/${name}.json`
-    console.log('RESULT write to ', outFile)
+    //console.log('RESULT write to ', outFile)
 
     fs.writeFile(outFile, json, err=> {
         if (err) {
             console.error(err);
         } else {
-            console.log('writtern to', outFile)
+            console.log('User result writtern to', outFile)
         }
     });
 
