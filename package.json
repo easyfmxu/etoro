@@ -1,0 +1,25 @@
+{
+  "name": "etoro",
+  "version": "1.0.0",
+  "description": ".Run npm commands to install playwright npm package under the git dir. Follow this doc  https://oxylabs.io/blog/playwright-web-scraping",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/easyfmxu/etoro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/easyfmxu/etoro/issues"
+  },
+  "homepage": "https://github.com/easyfmxu/etoro#readme",
+  "dependencies": {
+    "fast-csv": "^5.0.1",
+    "fs": "^0.0.1-security",
+    "playwright": "^1.43.1"
+  }
+}
