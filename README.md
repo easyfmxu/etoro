@@ -13,6 +13,7 @@
 fast-csv		fsevents		lodash.groupby		lodash.isequal		lodash.isnil		lodash.uniq		playwright-core
 
 .Run flow script to crawl everything
+
     bash sh/run.sh 
 
 .Individual test. Run script of a test. Test will load a page, select some elements, click some element to load another url page
