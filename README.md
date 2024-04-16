@@ -1,23 +1,30 @@
-.Follow this to setup playwright npm package
-https://oxylabs.io/blog/playwright-web-scraping
+.Run npm commands to install playwright npm package under the git dir. Follow this doc  https://oxylabs.io/blog/playwright-web-scraping
 
-    mkdir pscrape
-    cd pscrape
     npm init -y
     npm install playwright
 
-.Run flow script: 
+.Install other required npm packges 
+    npm i fs 
+    npm i fast-csv
+
+.The node modules should be similar to below
+
+@fast-csv		fs			lodash.escaperegexp	lodash.isboolean	lodash.isfunction	lodash.isundefined	playwright
+fast-csv		fsevents		lodash.groupby		lodash.isequal		lodash.isnil		lodash.uniq		playwright-core
+
+.Run flow script to crawl everything
     bash sh/run.sh 
 
-.Run script of a test. Test will load a page, select some elements, click some element to load another url page
+.Individual test
+Run script of a test. Test will load a page, select some elements, click some element to load another url page
+    //https://www.etoro.com/discover/people/results?copyblock=false&tradesmin=500&instrumentid=-5,-4,-6,-2,-1&page=1&period=OneYearAgo&sort=dailygain&pagesize=100&activeweeksmin=50
     node js/search.js
-    node js/users.js
 
     //https://www.etoro.com/people/juliengrichka/portfolio
+    node js/users.js
 
-    //https://www.etoro.com/discover/people/results?copyblock=false&tradesmin=500&instrumentid=-5,-4,-6,-2,-1&page=1&period=OneYearAgo&sort=dailygain&pagesize=100&activeweeksmin=50
-
-.RESULT. The search result is stored in data/users.csv and bunch of json files for each user.
+.Run Results are stored in data/ folder. It can be time folder under data/ folder to each crawl. 
+The search result is stored in data/users.csv and bunch of json files for each user.
     data/users.csv
     [username].json
 
