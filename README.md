@@ -1,11 +1,15 @@
-.Run npm commands to install playwright npm package under the git dir. Follow this doc  https://oxylabs.io/blog/playwright-web-scraping
+.Install npm packages 
+    
+    npm i
+    
+        .Run npm commands to install playwright npm package under the git dir. Follow this doc  https://oxylabs.io/blog/playwright-web-scraping
 
-    npm init -y
-    npm install playwright
+            npm init -y
+            npm install playwright
 
-.Install other required npm packges 
-    npm i fs 
-    npm i fast-csv
+        .Install other required npm packges 
+            npm i fs 
+            npm i fast-csv
 
 .The node modules should be similar to below
 
