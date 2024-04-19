@@ -47,6 +47,14 @@ nodejs needs to be later version
     /Users/fayezhao/.nvm/versions/node/v21.7.2/bin/node
 MacOS 
 
+.scheduling 
+
+    crontab -e 
+
+Example: monday-friday 8am:32
+ 
+    32 8 * * 1-5 export PATH=/home/fzhao/.nvm/versions/node/v16.14.2/bin:$PATH && cd ~/autotrade/NodeApp && node js/er.yfapi.js | tee output
+
 .Doc
 
     https://playwright.dev/docs/input
