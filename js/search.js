@@ -1,4 +1,4 @@
-const { readCsv, writeCsv } = require("./utils");
+//const { readCsv, writeCsv } = require("./utils");
 
 const playwright = require('playwright');
 
@@ -12,7 +12,7 @@ const search = async() =>{
     const page = await browser.newPage();
     await page.goto('https://www.etoro.com/discover/people/results?copyblock=false&tradesmin=500&instrumentid=-5,-4,-6,-2,-1&page=1&period=OneYearAgo&sort=dailygain&pagesize=20&activeweeksmin=50');
 
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
 
     /*
     const text = (await page.textContent("body"))
@@ -82,10 +82,10 @@ const search = async() =>{
     }
     
     //save portfolios in file
-    //console.log(portfolios)
+    console.log(portfolios)
 
-    const outFile = 'data/users.csv'
-    writeCsv(portfolios, outFile, true);
+    //const outFile = 'data/users.csv'
+    //writeCsv(portfolios, outFile, true);
 
     await browser.close();
 };

@@ -19,7 +19,7 @@
   "homepage": "https://github.com/easyfmxu/etoro#readme",
   "dependencies": {
     "fast-csv": "^5.0.1",
-    "fs": "^0.0.1-security",
-    "playwright": "^1.43.1"
+    "fs": "0.0.1-security",
+    "playwright": "^1.45.2"
   }
 }
