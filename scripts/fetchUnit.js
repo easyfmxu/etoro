@@ -77,7 +77,7 @@ async function savePageContent(page, outputPath) {
       .filter(href => href && href.endsWith("-converter.html"))
   );
 
-  if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 1);
+  if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 2);
 
   for (const href1 of firstLevelLinks) {
     const absUrl1 = `${BASE}${href1}`;
@@ -120,9 +120,11 @@ async function savePageContent(page, outputPath) {
       await gotoWithRetry(page, absUrl2);
       await savePageContent(page, targetPath);
 
-      console.log(`↩️ Returning to ${absUrl1}...`);
-      await gotoWithRetry(page, absUrl1);
+      //console.log(`↩️ Returning to ${absUrl1}...`);
+      //await gotoWithRetry(page, absUrl1);
     }
+
+    //await page.goto(sitemapUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
   }
 
   // await browser.close();
