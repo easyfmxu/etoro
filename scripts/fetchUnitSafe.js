@@ -11,6 +11,7 @@ function randomDelay(min = 1000, max = 3000) {
 }
 
 const fsp = fs.promises;
+const failedTasks = [];
 
 async function createDirectory(dirPath) {
   try {
@@ -55,6 +56,27 @@ async function savePageContent(page, outputPath) {
   await page.waitForTimeout(randomDelay(1000, 2500));
 }
 
+// === 新增：错误容忍包装 ===
+async function safeGoto(page, url) {
+  try {
+    await gotoWithRetry(page, url);
+    return true;
+  } catch (err) {
+    failedTasks.push({ type: "goto", url });
+    return false;
+  }
+}
+
+async function safeSave(page, outputPath) {
+  try {
+    await savePageContent(page, outputPath);
+    return true;
+  } catch (err) {
+    failedTasks.push({ type: "save", path: outputPath });
+    return false;
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: false });
   const page = await browser.newPage();
@@ -63,8 +85,9 @@ async function savePageContent(page, outputPath) {
   const sitemapPath = path.join(ROOT, "index.html");
 
   console.log("🧭 Step 1: Visiting sitemap...");
-  await page.goto(sitemapUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
-  await savePageContent(page, sitemapPath);
+  if (await safeGoto(page, sitemapUrl)) {
+    await safeSave(page, sitemapPath);
+  }
 
   let firstLevelLinks = await page.$$eval("a", as =>
     as
@@ -80,16 +103,15 @@ async function savePageContent(page, outputPath) {
     const categoryDir = path.join(ROOT, categorySlug);
 
     console.log(`\n📂 Step 2: Visiting ${categorySlug} → ${absUrl1}`);
-    await gotoWithRetry(page, absUrl1);
-    await savePageContent(page, path.join(ROOT, href1));
+    if (!(await safeGoto(page, absUrl1))) continue;
+    await safeSave(page, path.join(ROOT, href1));
     await createDirectory(categoryDir);
 
     console.log("🔍 Extracting second-level links...");
-
     await page.waitForSelector('a[href*="-to-"]', { timeout: 5000 }).catch(() => {
-        console.log("⚠️ No conversion links appeared in 5s");
+      console.log("⚠️ No conversion links appeared in 5s");
     });
-      
+
     const links2 = await page.$$eval("a", as =>
       as
         .map(a => a.getAttribute("href"))
@@ -97,7 +119,6 @@ async function savePageContent(page, outputPath) {
           href &&
           href.endsWith(".htm") &&
           href.includes("/") &&
-          //href.split("/").length >= 2 &&
           href.includes("-to-")
         )
     );
@@ -112,14 +133,14 @@ async function savePageContent(page, outputPath) {
       const targetPath = path.join(ROOT, category, fromto, "index.html");
 
       console.log(`→ Visiting detail page: ${absUrl2}`);
-      await gotoWithRetry(page, absUrl2);
-      await savePageContent(page, targetPath);
-
-      //console.log(`↩️ Returning to ${absUrl1}...`);
-      //await gotoWithRetry(page, absUrl1);
+      if (!(await safeGoto(page, absUrl2))) continue;
+      await safeSave(page, targetPath);
     }
+  }
 
-    //await page.goto(sitemapUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
+  if (failedTasks.length > 0) {
+    fs.writeFileSync("errors.json", JSON.stringify(failedTasks, null, 2));
+    console.log(`❗️ ${failedTasks.length} errors saved to errors.json`);
   }
 
   // await browser.close();
