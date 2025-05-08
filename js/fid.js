@@ -2,6 +2,10 @@
 
 const playwright = require('playwright');
 
+const user = {
+    login: 'amibr057',
+    passwd: 'Qwert523!$2wf',
+}
 const load = async() =>{
     const launchOptions = {
         headless: false,
@@ -13,7 +17,17 @@ const load = async() =>{
     await page.goto('https://workplaceservices.fidelity.com/mybenefits/navstation/navigation');
 
     await page.waitForTimeout(5000);
+    //id dom-username-input
+    //id dom-pswd-input
+    //button dom-login-button
+    await page.locator("#dom-username-input").fill(user.login)
+    await page.waitForTimeout(1000);
+    await page.locator("#dom-pswd-input").fill(user.passwd)
+    await page.waitForTimeout(1000);
+    
+    await page.locator("#dom-login-button").click()
 
+    await page.waitForTimeout(5000);
     /*
     const text = (await page.textContent("body"))
         .replace(/ +/g, " ")
