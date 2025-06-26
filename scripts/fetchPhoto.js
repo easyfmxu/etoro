@@ -4,7 +4,7 @@ const { chromium } = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../data/photo");
 const BASE = "https://photogov.net";
-const testMode = true;
+const testMode = false;
 
 function randomDelay(min = 1000, max = 3000) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
