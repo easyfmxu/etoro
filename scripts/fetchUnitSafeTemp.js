@@ -92,10 +92,12 @@ async function safeSave(page, outputPath) {
   let firstLevelLinks = await page.$$eval("a", as =>
     as
       .map(a => a.getAttribute("href"))
-      .filter(href => href && href.endsWith("-converter.html"))
+      .filter(href => href && 
+        href.includes("temperature") && 
+        href.endsWith("-converter.html"))
   );
 
-  if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 3);
+  //if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 2);
 
   for (const href1 of firstLevelLinks) {
     const absUrl1 = `${BASE}${href1}`;
@@ -105,7 +107,7 @@ async function safeSave(page, outputPath) {
     console.log(`\n📂 Step 2: Visiting ${categorySlug} → ${absUrl1}`);
     if (!(await safeGoto(page, absUrl1))) continue;
     await safeSave(page, path.join(ROOT, href1));
-    await createDirectory(categoryDir);
+    //await createDirectory(categoryDir);
 
     console.log("🔍 Extracting second-level links...");
     await page.waitForSelector('a[href*="-to-"]', { timeout: 5000 }).catch(() => {

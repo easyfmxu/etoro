@@ -12,6 +12,7 @@ function randomDelay(min = 1000, max = 3000) {
 
 const fsp = fs.promises;
 const failedTasks = [];
+const visitedUrls = new Set(); // ✅ 用于去重访问
 
 async function createDirectory(dirPath) {
   try {
@@ -29,7 +30,7 @@ function ensureDir(filePath) {
   }
 }
 
-async function gotoWithRetry(page, url, retries = 3) {
+async function gotoWithRetry0(page, url, retries = 3) {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       const timeout = randomDelay(5000, 10000);
@@ -48,6 +49,22 @@ async function gotoWithRetry(page, url, retries = 3) {
   }
 }
 
+async function gotoWithRetry(page, url, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      await page.goto(url, { 
+        waitUntil: "networkidle",
+        timeout: 15000 
+      });
+      return;
+    } catch (e) {
+      if (i === retries) throw e;
+      console.warn(`⚠️ Retry ${i + 1} for ${url}`);
+      await page.waitForTimeout(1000 + Math.random() * 2000);
+    }
+  }
+}
+
 async function savePageContent(page, outputPath) {
   const html = await page.content();
   ensureDir(outputPath);
@@ -56,10 +73,14 @@ async function savePageContent(page, outputPath) {
   await page.waitForTimeout(randomDelay(1000, 2500));
 }
 
-// === 新增：错误容忍包装 ===
 async function safeGoto(page, url) {
+  if (visitedUrls.has(url)) {
+    console.log(`⚠️ Skipping already visited ${url}`);
+    return false;
+  }
   try {
     await gotoWithRetry(page, url);
+    visitedUrls.add(url);
     return true;
   } catch (err) {
     failedTasks.push({ type: "goto", url });
@@ -95,15 +116,14 @@ async function safeSave(page, outputPath) {
       .filter(href => href && href.endsWith("-converter.html"))
   );
 
-  if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 3);
+  if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 2);
 
   for (const href1 of firstLevelLinks) {
     const absUrl1 = `${BASE}${href1}`;
+    if (!(await safeGoto(page, absUrl1))) continue;
+
     const categorySlug = href1.replace("/", "").replace("-converter.html", "");
     const categoryDir = path.join(ROOT, categorySlug);
-
-    console.log(`\n📂 Step 2: Visiting ${categorySlug} → ${absUrl1}`);
-    if (!(await safeGoto(page, absUrl1))) continue;
     await safeSave(page, path.join(ROOT, href1));
     await createDirectory(categoryDir);
 
@@ -128,11 +148,15 @@ async function safeSave(page, outputPath) {
 
     for (const href2 of fromToLinks) {
       const absUrl2 = `${BASE}${href2}`;
+      if (visitedUrls.has(absUrl2)) {
+        console.log(`⚠️ Skipping already visited ${absUrl2}`);
+        continue;
+      }
+
       const [_, category, filename] = href2.split("/");
       const fromto = filename.replace(".htm", "");
       const targetPath = path.join(ROOT, category, fromto, "index.html");
 
-      console.log(`→ Visiting detail page: ${absUrl2}`);
       if (!(await safeGoto(page, absUrl2))) continue;
       await safeSave(page, targetPath);
     }
@@ -143,5 +167,5 @@ async function safeSave(page, outputPath) {
     console.log(`❗️ ${failedTasks.length} errors saved to errors.json`);
   }
 
-  // await browser.close();
+  await browser.close();
 })();
