@@ -4,24 +4,19 @@ const { chromium } = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../data/photo");
 const BASE = "https://photogov.net";
-const testMode = false;
+const testMode = true;
 
 function randomDelay(min = 1000, max = 3000) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const fsp = fs.promises;
 const failedTasks = [];
 const visitedUrls = new Set(); // ✅ 用于去重访问
-
-async function createDirectory(dirPath) {
-  try {
-    await fsp.mkdir(dirPath, { recursive: true });
-    console.log(`📁 Directory created: ${dirPath}`);
-  } catch (err) {
-    console.error(`❌ Error creating directory '${dirPath}':`, err.message);
-  }
-}
 
 function ensureDir(filePath) {
   const dir = path.dirname(filePath);
@@ -113,16 +108,31 @@ async function safeSave(page, outputPath) {
   let firstLevelLinks = await page.$$eval("a", as =>
     as
       .map(a => a.getAttribute("href"))
-      .filter(href => href && href.includes("/documents/"))
+      .filter(href => href && href.includes("/documents/") && (href!=="/documents/"))
   );
 
-  if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 2);
+  firstLevelLinks = [...new Set(firstLevelLinks)];
+
+  const outputPath = path.join(ROOT, "links.json");
+  fs.writeFileSync(outputPath, JSON.stringify(firstLevelLinks, null, 2), "utf8");
+  console.log(`✅ Saved ${firstLevelLinks.length} links to links.json`);
+
+  console.log(firstLevelLinks.length, firstLevelLinks)
+
+  if (testMode) firstLevelLinks = firstLevelLinks.slice(0, 3);
 
   for (const href1 of firstLevelLinks) {
+    // /documents/au-passport-photo/
     const absUrl1 = `${BASE}${href1}`;
     if (!(await safeGoto(page, absUrl1))) continue;
 
-    await safeSave(page, path.join(ROOT, href1));
+    const slug = href1.replace(/^\/documents\/|\/$/g, ''); // "au-passport-photo"
+    const file = path.join(ROOT, `${slug}.html`);
+    await safeSave(page, file);
+
+    const delay = randomDelay(2000,5000);
+    console.log(`⏳ Waiting ${delay}ms before next page...`);
+    await wait(delay);
   }
 
   if (failedTasks.length > 0) {
