@@ -9,6 +9,7 @@ const cheerio = require("cheerio");
 const INPUT_DIR      = path.resolve(__dirname, "../data/photo");
 const OUTPUT_DIR     = path.resolve(__dirname, "../data/photo-json");
 const ORIGINAL_DIR   = path.resolve(__dirname, "../data/photo-json-original");
+const EXTRA_SPEC_DIR   = path.resolve(__dirname, "../data/photo-spec-extra");
 
 /* -------- helpers -------- */
 const ensureDir = dir => { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); };
@@ -189,6 +190,15 @@ function main() {
       JSON.stringify(raw,  null, 2),
       "utf-8"
     );
+
+    if (imgSpec && Object.keys(imgSpec).length === 0) {
+      fs.writeFileSync(
+        path.join(EXTRA_SPEC_DIR, `${slug}.json`),
+        JSON.stringify(raw, null, 2),
+        "utf-8"
+      );
+      console.log(`⚠️  ${slug}: no landmark specs → saved to EXTRA_SPEC_DIR`);
+    }
 
     console.log(`✅ Generated ${slug}.json (normalised + original)`);
   }
