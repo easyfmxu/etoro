@@ -124,7 +124,7 @@ function makeIsOfficialFn({ site, tld }) {
 }
 
 const queries = [
-  //{ code: "cn", country: "china",  doc: "visa",        tld: "gov.cn"     },
+  { code: "cn", country: "china",  doc: "visa",        tld: "gov.cn"     },
   //{ code: "jp", country: "japan",  doc: "passport",    tld: "go.jp"      },
   { code: "us", country: "usa",    doc: "green card",  tld: "uscis.gov"  },
   { code: "ca", country: "canada", doc: "visa",        tld: "canada.ca"  },
@@ -248,6 +248,6 @@ const queries = [
     //await wait(100)
   }
 
-  await browser.close();
+  //await browser.close();
   console.log("\n🏁 Done.");
 })();

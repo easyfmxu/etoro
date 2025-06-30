@@ -21,9 +21,103 @@ const mmFromText = txt => {
   return null;
 };
 
+/**
+ * Convert an imgSpec object such as
+ *   { height: "48mm", head_height: "3.4cm", crown_top: "4mm" }
+ * into
+ *   { heightMm: 48, headHeightMm: 34, crownTopMm: 4 }
+ *
+ * - Non-numeric values are preserved under `${key}Raw`
+ *   e.g.  { background: "lightgrey" }  ->  { backgroundRaw: "lightgrey" }
+ */
+function convertSpec(imgSpec) {
+  const out = {};
+
+  //const camel = s => s.replace(/[-_](.)/g, (_, c) => c.toUpperCase());
+  const camel = s => s
+  const removePercent = s => parseFloat(s.replace("%", ""));
+
+  for (const [key, rawVal] of Object.entries(imgSpec)) {
+    const txt = String(rawVal).trim();
+
+    const pctMatch = txt.match(/^([\d.]+)\s*%$/);
+    if (pctMatch) {
+      out[`${camel(key)}Percent`] = removePercent(txt);
+      continue;
+    }
+
+    // Try to capture "<number><optional-space><unit>"
+    const m = txt.match(/^([\d.]+)\s*([a-z]*)$/i);
+    if (!m) {
+      // no numeric part → keep original under *Raw*
+      out[`${camel(key)}Raw`] = txt;
+      continue;
+    }
+
+    let num = parseFloat(m[1]);
+    let unit = m[2].toLowerCase() || "mm";         // default to mm if unit omitted
+
+    // convert everything to millimetres
+    switch (unit) {
+      case "mm":
+        break;
+      case "cm":
+        num *= 10;
+        unit = "mm";
+        break;
+      case "in":
+      case "inch":
+      case "inches":
+        num *= 25.4;
+        unit = "mm";
+        break;
+      default:
+        // unknown unit – keep raw
+        out[`${camel(key)}Raw`] = txt;
+        continue;
+    }
+
+    // build new key, e.g. heightMm, headHeightMm
+    const newKey = `${camel(key)}${unit[0].toUpperCase()}${unit.slice(1)}`;
+    out[newKey] = +num.toFixed(2);                 // keep numeric, 2-dp precision
+  }
+
+  return out;
+}
+
+/*
+<div class="details--photo-size__landmarks">
+  <div class="details--photo-size__landmarks--height">
+      48mm
+  </div> <div class="details--photo-size__landmarks--width">
+      38mm
+  </div> <div class="details--photo-size__landmarks--head-height">
+      34mm
+  </div> <div class="details--photo-size__landmarks--crown-top">
+      4mm
+  </div>
+</div>
+*/
+function extractImgSpec($) {
+  const imgSpec = {};
+
+  $(".details--photo-size__landmarks > div").each((_, div) => {
+    const cls = ($(div).attr("class") || "");                  // full class string
+    const valTxt = $(div).text().trim();                       // e.g. "48mm"
+
+    const parts = cls.split("--");                             // e.g. ['details', 'photo-size', 'landmarks', 'height']
+    const lastPart = parts[parts.length - 1];                  // e.g. 'height'
+    //const key = lastPart.replace(/-/g, "_");                   // optional: normalize to underscore if needed
+    const key = lastPart
+
+    imgSpec[key] = valTxt;                                     // keep raw text, e.g. "48mm"
+  });
+
+  return imgSpec;
+}
+
 /* -------- extractor -------- */
-function extractOne(html) {
-  const $ = cheerio.load(html);
+function extractOne($) {
 
   const spec = {};          // normalised
   const raw  = {};          // label -> value
@@ -73,14 +167,23 @@ function main() {
     const htmlPath     = path.join(INPUT_DIR, file);
     const html         = fs.readFileSync(htmlPath, "utf-8");
 
-    const { spec, raw } = extractOne(html);
+    const $ = cheerio.load(html);
 
-    /* write outputs */
+    const { spec, raw } = extractOne($);
+
+    const imgSpec = extractImgSpec($);
+    raw.spec = imgSpec;
+
+    const numberSpec = convertSpec(imgSpec)
+    raw.numberSpec = numberSpec
+
+    /* write outputs */  //output/*.json
     fs.writeFileSync(
       path.join(OUTPUT_DIR,   `${slug}.json`),
       JSON.stringify(spec, null, 2),
       "utf-8"
     );
+    //original/*.json
     fs.writeFileSync(
       path.join(ORIGINAL_DIR, `${slug}.json`),
       JSON.stringify(raw,  null, 2),

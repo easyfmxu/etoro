@@ -76,6 +76,7 @@ function main() {
     const { spec, raw } = extractOne(html);
 
     /* write outputs */
+    // output/*.json *-original.json
     fs.writeFileSync(
       path.join(OUTPUT_DIR,   `${slug}.json`),
       JSON.stringify(spec, null, 2),
